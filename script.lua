@@ -10,11 +10,13 @@ local GhostLib = {
 	Pages = {},
 	Notifications = {},
 	Started = false,
-	Version = 2,
-    PlayerM = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ghxstttt/PlayerM/main/script.lua"))();
+	Version = 3,
+    PlayerM = loadstring(game:HttpGet("https://raw.githubusercontent.com/el-ghxst/PlayerM/refs/heads/main/script.lua"))();
+    Name = "",
 	
 }
 
+local HttpService = game:GetService("HttpService")
 local prefix = "."
 local colors = {}
 colors.Green = Color3.fromRGB(85, 255, 127)
@@ -829,10 +831,29 @@ function GhostLib.Functions:AddButton(tab, page)
 		ts:Create(stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
 	end)
 end
+
+GhostLib.Settings = nil
+
+local file = GhostLib.Name
+if file ~= nil and tostring(file) then
+    local json
+    if (readfile and isfile and isfile(file..".txt")) then
+        GhostLib.Settings = HttpService:JSONDecode(readfile(file..".txt"))
+    end
+    
+end  
+
 function GhostLib.Functions:AddKeybind(tab, page)
 	local Key = tab.Key or Enum.KeyCode.Unknown
+
 	local CallBack = tab.CallBack
 	local text = tab.Text or ""
+
+    if GhostLib.Settings ~= nil then
+        if GhostLib.Settings[text] then
+            Key = GhostLib.Settings[text]
+        end
+    end
 	local Nk = KeyBind:Clone()
 	Nk.Parent = page.Frame
 	Nk.Box.Text = Key.Name
@@ -849,7 +870,10 @@ function GhostLib.Functions:AddKeybind(tab, page)
 					Nk.Box.Text = Key.Name
 					GhostLib.Functions:RemoveRgb(Nk)
 					conn1:Disconnect()
-					
+                    local json
+                    GhostLib.Settings[text] = Key
+					json = HttpService:JSONEncode(GhostLib.Settings)
+                    writefile(file..".txt", json)
 					wait(0.5)
 					al = false
 				end
@@ -861,7 +885,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
 	
 	uis.InputBegan:Connect(function(i,p)
 		if not p then
-			if i.KeyCode == Key and al == false then
+			if i.KeyCode == Key and al == false and GhostLib.Started == true then
 				pcall(CallBack)
 			end
 		end
@@ -1276,6 +1300,7 @@ coroutine.wrap(function()
 	until GhostLib.Started == true
 	Menu.Visible = true
 end)()
+
 
 GhostLib.PlayerM:Start()
 return GhostLib
