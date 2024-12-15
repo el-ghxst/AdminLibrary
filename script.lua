@@ -832,13 +832,13 @@ function GhostLib.Functions:AddButton(tab, page)
 	end)
 end
 
-GhostLib.Settings = nil
+GhostLib.Settings = {}
 
-local file = GhostLib.Name
+local file = GhostLib.Name..".txt"
 if file ~= nil and tostring(file) then
     local json
-    if (readfile and isfile and isfile(file..".txt")) then
-        GhostLib.Settings = HttpService:JSONDecode(readfile(file..".txt"))
+    if (readfile and isfile and isfile(file)) then
+        GhostLib.Settings = HttpService:JSONDecode(readfile(file))
     end
     
 end  
@@ -849,11 +849,9 @@ function GhostLib.Functions:AddKeybind(tab, page)
 	local CallBack = tab.CallBack
 	local text = tab.Text or ""
 
-    if GhostLib.Settings ~= nil then
-        if GhostLib.Settings[text] then
-            Key = GhostLib.Settings[text]
-        end
-    end
+    if GhostLib.Settings[text] then
+		Key = GhostLib.Settings[text]
+	end
 	local Nk = KeyBind:Clone()
 	Nk.Parent = page.Frame
 	Nk.Box.Text = Key.Name
@@ -873,7 +871,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
                     local json
                     GhostLib.Settings[text] = Key
 					json = HttpService:JSONEncode(GhostLib.Settings)
-                    writefile(file..".txt", json)
+                    writefile(file, json)
 					wait(0.5)
 					al = false
 				end
@@ -1187,10 +1185,16 @@ function GhostLib.Functions:Execute_command(tab)
 end
 
 
-
+local debounce = false
 
 lp.Chatted:connect(function(msg)
-	GhostLib.Functions:Execute_command({str = msg, method = "chatted"})
+    if debounce == false then
+        debounce = true
+        GhostLib.Functions:Execute_command({str = msg, method = "chatted"})
+    else
+        debounce = false
+    end
+	
 end)
 
 GhostLib.Functions:AddCommand({Names = {"changeprefix", "prefix", "pfx"}, Description = {"string"}, Funct = function(args)
