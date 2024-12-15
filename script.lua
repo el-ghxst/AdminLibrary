@@ -888,7 +888,8 @@ function GhostLib.Functions:AddKeybind(tab, page)
 						GhostLib.Settings[text] = Key
 						print(text)
 						for i,v in pairs(GhostLib.Settings) do
-							print(i..": "..v)
+							print(i)
+							print(v)
 						end
 						json = HttpService:JSONEncode(GhostLib.Settings)
 						print("file")
