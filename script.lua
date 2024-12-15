@@ -886,6 +886,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
 						conn1:Disconnect()
 						local json
 						GhostLib.Settings[text] = Key
+						print(text)
 						for i,v in pairs(GhostLib.Settings) do
 							print(i..": "..v)
 						end
