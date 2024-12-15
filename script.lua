@@ -835,6 +835,8 @@ end
 GhostLib.Settings = {}
 
 local file = GhostLib.Name..".txt"
+
+print(file)
 if file ~= nil and tostring(file) then
     local json
     if (readfile and isfile and isfile(file)) then
@@ -872,6 +874,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
                     GhostLib.Settings[text] = Key
 					json = HttpService:JSONEncode(GhostLib.Settings)
                     writefile(file, json)
+					print("writefile")
 					wait(0.5)
 					al = false
 				end
