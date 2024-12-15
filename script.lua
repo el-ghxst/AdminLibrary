@@ -837,9 +837,9 @@ GhostLib.Settings = {}
 local file
 
 coroutine.wrap(function()
-	repeat game:GetService("RunService").Heartbeat:Wait() until GhostLib.Started == true
+	repeat wait() until GhostLib.Started == true
 	local file = GhostLib.Name..".txt"
-
+	print(file)
 	if file ~= nil and tostring(file) then
 		local json
 		if (readfile and isfile and isfile(file)) then
@@ -852,7 +852,7 @@ end)()
 
 function GhostLib.Functions:AddKeybind(tab, page)
 	coroutine.wrap(function()
-		repeat game:GetService("RunService").Heartbeat:Wait() until GhostLib.Started == true
+		repeat wait until GhostLib.Started == true
 		local Key = tab.Key or Enum.KeyCode.Unknown
 
 		local CallBack = tab.CallBack
