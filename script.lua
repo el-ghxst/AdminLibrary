@@ -869,7 +869,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
 		Nk.Parent = page.Frame
 		repeat wait() until loadedidk == true
 		if GhostLib.Settings[text] then
-			Key = GhostLib.Settings[text]
+			Key = Enum.KeyCode[GhostLib.Settings[text]]
 			print(Key)
 		end
 		Nk.Box.Text = Key.Name
@@ -882,12 +882,12 @@ function GhostLib.Functions:AddKeybind(tab, page)
 				if not p then
 					if i.KeyCode ~= Enum.KeyCode.Unknown and al == false then
 						al = true
-						Key = i.KeyCode
+						  = i.KeyCode
 						Nk.Box.Text = Key.Name
 						GhostLib.Functions:RemoveRgb(Nk)
 						conn1:Disconnect()
 						local json
-						GhostLib.Settings[text] = Key
+						GhostLib.Settings[text] = Key.Name
 						print(text)
 						for i,v in pairs(GhostLib.Settings) do
 							print(i)
