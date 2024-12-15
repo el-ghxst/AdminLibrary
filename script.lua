@@ -833,7 +833,7 @@ function GhostLib.Functions:AddButton(tab, page)
 end
 
 GhostLib.Settings = {}
-
+local loadedidk = false
 local file = ""
 print("olas")
 coroutine.wrap(function()
@@ -847,6 +847,8 @@ coroutine.wrap(function()
 		end
 		
 	end  
+
+	loadedidk = true 
 end)()
 
 print("ola")
@@ -858,13 +860,14 @@ function GhostLib.Functions:AddKeybind(tab, page)
 		local CallBack = tab.CallBack
 		local text = tab.Text or ""
 	
+		
+		local Nk = KeyBind:Clone()
+		Nk.Parent = page.Frame
+		repeat wait() until loadedidk == true
 		if GhostLib.Settings[text] then
 			Key = GhostLib.Settings[text]
 			print(Key)
 		end
-		local Nk = KeyBind:Clone()
-		Nk.Parent = page.Frame
-		repeat wait() until GhostLib.Started == true
 		Nk.Box.Text = Key.Name
 		Nk.Text2.Text = text
 		local al = false
