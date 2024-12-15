@@ -835,7 +835,7 @@ end
 GhostLib.Settings = {}
 
 local file
-
+print("olas")
 coroutine.wrap(function()
 	repeat wait() until GhostLib.Started == true
 	local file = GhostLib.Name..".txt"
@@ -849,10 +849,10 @@ coroutine.wrap(function()
 	end  
 end)()
 
-
+print("ola")
 function GhostLib.Functions:AddKeybind(tab, page)
 	coroutine.wrap(function()
-		repeat wait until GhostLib.Started == true
+		repeat wait() until GhostLib.Started == true
 		local Key = tab.Key or Enum.KeyCode.Unknown
 
 		local CallBack = tab.CallBack
