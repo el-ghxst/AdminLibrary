@@ -843,8 +843,10 @@ coroutine.wrap(function()
 	if file ~= nil and tostring(file) then
 		if (readfile and isfile and isfile(file)) then
 			GhostLib.Settings = HttpService:JSONDecode(readfile(file))
+			print("hi")
 			for i,v in pairs(GhostLib.Settings) do
-				print(i..": "..v)
+				print(i)
+				print(v)
 			end
 		end
 		
