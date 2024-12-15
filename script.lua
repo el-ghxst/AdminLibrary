@@ -834,75 +834,84 @@ end
 
 GhostLib.Settings = {}
 
-local file = GhostLib.Name..".txt"
+local file
 
-print(file)
-if file ~= nil and tostring(file) then
-    local json
-    if (readfile and isfile and isfile(file)) then
-        GhostLib.Settings = HttpService:JSONDecode(readfile(file))
-    end
-    
-end  
+coroutine.wrap(function()
+	repeat game:GetService("RunService").Heartbeat:Wait() until GhostLib.Started == true
+	local file = GhostLib.Name..".txt"
+
+	if file ~= nil and tostring(file) then
+		local json
+		if (readfile and isfile and isfile(file)) then
+			GhostLib.Settings = HttpService:JSONDecode(readfile(file))
+		end
+		
+	end  
+end)()
+
 
 function GhostLib.Functions:AddKeybind(tab, page)
-	local Key = tab.Key or Enum.KeyCode.Unknown
+	coroutine.wrap(function()
+		repeat game:GetService("RunService").Heartbeat:Wait() until GhostLib.Started == true
+		local Key = tab.Key or Enum.KeyCode.Unknown
 
-	local CallBack = tab.CallBack
-	local text = tab.Text or ""
-
-    if GhostLib.Settings[text] then
-		Key = GhostLib.Settings[text]
-	end
-	local Nk = KeyBind:Clone()
-	Nk.Parent = page.Frame
-	Nk.Box.Text = Key.Name
-	Nk.Text2.Text = text
-	local al = false
-	Nk.MouseButton1Down:Connect(function()
-		local conn1
-		GhostLib.Functions:Rgb(Nk)
-		conn1 = uis.InputBegan:Connect(function(i,p)
-			if not p then
-				if i.KeyCode ~= Enum.KeyCode.Unknown and al == false then
-					al = true
-					Key = i.KeyCode
-					Nk.Box.Text = Key.Name
-					GhostLib.Functions:RemoveRgb(Nk)
-					conn1:Disconnect()
-                    local json
-                    GhostLib.Settings[text] = Key
-					json = HttpService:JSONEncode(GhostLib.Settings)
-                    writefile(file, json)
-					print("writefile")
-					wait(0.5)
-					al = false
+		local CallBack = tab.CallBack
+		local text = tab.Text or ""
+	
+		if GhostLib.Settings[text] then
+			Key = GhostLib.Settings[text]
+		end
+		local Nk = KeyBind:Clone()
+		Nk.Parent = page.Frame
+		Nk.Box.Text = Key.Name
+		Nk.Text2.Text = text
+		local al = false
+		Nk.MouseButton1Down:Connect(function()
+			local conn1
+			GhostLib.Functions:Rgb(Nk)
+			conn1 = uis.InputBegan:Connect(function(i,p)
+				if not p then
+					if i.KeyCode ~= Enum.KeyCode.Unknown and al == false then
+						al = true
+						Key = i.KeyCode
+						Nk.Box.Text = Key.Name
+						GhostLib.Functions:RemoveRgb(Nk)
+						conn1:Disconnect()
+						local json
+						GhostLib.Settings[text] = Key
+						json = HttpService:JSONEncode(GhostLib.Settings)
+						writefile(file, json)
+						print("writefile")
+						wait(0.5)
+						al = false
+					end
+					
 				end
-				
-			end
+			end)
+			
 		end)
 		
-	end)
-	
-	uis.InputBegan:Connect(function(i,p)
-		if not p then
-			if i.KeyCode == Key and al == false and GhostLib.Started == true then
-				pcall(CallBack)
+		uis.InputBegan:Connect(function(i,p)
+			if not p then
+				if i.KeyCode == Key and al == false and GhostLib.Started == true then
+					pcall(CallBack)
+				end
 			end
-		end
-	end)
-	local stroke = uiStroke(Nk)
-	stroke.Thickness = 1.2
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Transparency = 1
-	stroke.Enabled = true
-	rgbp(stroke, "Color")
-	Nk.MouseEnter:Connect(function()
-		ts:Create(stroke, TweenInfo.new(0.3), {Transparency = 0}):Play()
-	end)
-	Nk.MouseLeave:Connect(function()
-		ts:Create(stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
-	end)
+		end)
+		local stroke = uiStroke(Nk)
+		stroke.Thickness = 1.2
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Transparency = 1
+		stroke.Enabled = true
+		rgbp(stroke, "Color")
+		Nk.MouseEnter:Connect(function()
+			ts:Create(stroke, TweenInfo.new(0.3), {Transparency = 0}):Play()
+		end)
+		Nk.MouseLeave:Connect(function()
+			ts:Create(stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+		end)
+	end)()
+
 end
 function GhostLib.Functions:AddPage(tab)
 	
