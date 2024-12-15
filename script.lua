@@ -882,7 +882,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
 				if not p then
 					if i.KeyCode ~= Enum.KeyCode.Unknown and al == false then
 						al = true
-						  = i.KeyCode
+						Key  = i.KeyCode
 						Nk.Box.Text = Key.Name
 						GhostLib.Functions:RemoveRgb(Nk)
 						conn1:Disconnect()
