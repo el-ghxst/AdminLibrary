@@ -838,7 +838,7 @@ local file
 print("olas")
 coroutine.wrap(function()
 	repeat wait() until GhostLib.Started == true
-	local file = GhostLib.Name..".txt"
+	file = GhostLib.Name..".txt"
 	print(file)
 	if file ~= nil and tostring(file) then
 		local json
