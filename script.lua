@@ -852,7 +852,7 @@ end)()
 print("ola")
 function GhostLib.Functions:AddKeybind(tab, page)
 	coroutine.wrap(function()
-		repeat wait() until GhostLib.Started == true
+		
 		local Key = tab.Key or Enum.KeyCode.Unknown
 
 		local CallBack = tab.CallBack
@@ -864,6 +864,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
 		end
 		local Nk = KeyBind:Clone()
 		Nk.Parent = page.Frame
+		repeat wait() until GhostLib.Started == true
 		Nk.Box.Text = Key.Name
 		Nk.Text2.Text = text
 		local al = false
