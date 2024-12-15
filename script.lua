@@ -834,14 +834,13 @@ end
 
 GhostLib.Settings = {}
 
-local file
+local file = ""
 print("olas")
 coroutine.wrap(function()
 	repeat wait() until GhostLib.Started == true
 	file = GhostLib.Name..".txt"
 	print(file)
 	if file ~= nil and tostring(file) then
-		local json
 		if (readfile and isfile and isfile(file)) then
 			GhostLib.Settings = HttpService:JSONDecode(readfile(file))
 		end
@@ -880,6 +879,7 @@ function GhostLib.Functions:AddKeybind(tab, page)
 						local json
 						GhostLib.Settings[text] = Key
 						json = HttpService:JSONEncode(GhostLib.Settings)
+						print("file")
 						writefile(file, json)
 						print("writefile")
 						wait(0.5)
