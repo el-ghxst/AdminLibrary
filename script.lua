@@ -804,14 +804,19 @@ function GhostLib.Functions:AddTextBox(tab, page)
     
     return box.Box
 end
-function GhostLib.Functions:AddButton(tab, page)
+function GhostLib.Functions:AddButton(tab, page, outside)
 	local Text = tab.Text
 	local Color = tab.Color or Color3.fromRGB(255, 255, 255)
 	local Button = Button:Clone()
 	local callBack = tab.CallBack or nil
 	Button.Text = Text
 	Button.TextColor3 = Color
-	Button.Parent = page.Frame
+	if outside == true then
+		Button.Parent = page
+	else
+		Button.Parent = page.Frame
+	end
+
 	local stroke = uiStroke(Button)
 	stroke.Thickness = 1.2
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -830,24 +835,43 @@ function GhostLib.Functions:AddButton(tab, page)
 	Button.MouseLeave:Connect(function()
 		ts:Create(stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
 	end)
+	return Button
 end
+
+local MobileButton = GhostLib.Functions:AddButton({
+	Text = "Open CMD",
+	CallBack = function()
+		if GhostLib.States.CommandBarVisible == true then
+			GhostLib.Functions:CloseCommandBar()
+		elseif GhostLib.States.CommandBarVisible == false then
+			GhostLib.Functions:OpenCommandBar()
+		end
+	end,
+},ScreenGui, true)
+MobileButton.Position = UDim2.new(0.01, 0,0.946, 0)
+
+coroutine.wrap(function()
+	while wait(0.5) do
+		if uis.TouchEnabled then
+			MobileButton.Visible = true
+		else
+			MobileButton.Visible = false
+		end
+	end
+
+end)()
+
 
 GhostLib.Settings = {}
 local loadedidk = false
 local file = ""
-print("olas")
+
 coroutine.wrap(function()
 	repeat wait() until GhostLib.Started == true
 	file = GhostLib.Name..".txt"
-	print(file)
 	if file ~= nil and tostring(file) then
 		if (readfile and isfile and isfile(file)) then
 			GhostLib.Settings = HttpService:JSONDecode(readfile(file))
-			print("hi")
-			for i,v in pairs(GhostLib.Settings) do
-				print(i)
-				print(v)
-			end
 		end
 		
 	end  
@@ -855,7 +879,6 @@ coroutine.wrap(function()
 	loadedidk = true 
 end)()
 
-print("ola")
 function GhostLib.Functions:AddKeybind(tab, page)
 	coroutine.wrap(function()
 		
