@@ -1,4 +1,10 @@
 
+
+if getgenv().GHOST_ADMIN_LIBRARY then
+	getgenv().GHOST_ADMIN_LIBRARY:Disconnect()
+end
+
+
 local Players = game:GetService("Players")
 local ts = game:GetService("TweenService")
 local lp = Players.LocalPlayer
@@ -15,6 +21,7 @@ local GhostLib = {
     Name = "",
 	
 }
+getgenv().GHOST_ADMIN_LIBRARY = GhostLib
 
 local HttpService = game:GetService("HttpService")
 local prefix = "."
@@ -26,10 +33,16 @@ colors.Red = Color3.fromRGB(255, 0, 0)
 colors.DarkRed = Color3.fromRGB(170, 0, 0)
 colors.Purple = Color3.fromRGB(255,0,255)
 colors.LightBlue = Color3.fromRGB(51,249,255)
+local DISCONNECT_SCRIPT = false
 function GhostLib:Start()
 	GhostLib.Started = true
 end
+
 local ScreenGui = Instance.new("ScreenGui")
+function GhostLib:Disconnect()
+	DISCONNECT_SCRIPT = true
+	ScreenGui:Destroy()
+end
 local CommandBar = Instance.new("Frame")
 local CommandBox = Instance.new("TextBox")
 local CommandFind = Instance.new("Frame")
@@ -692,7 +705,7 @@ function GhostLib.Functions:Rgb(frame)
 					counter = counter + 2
 					status = "down"
 				end
-			until gradient.Parent ~= frame
+			until gradient.Parent ~= frame or DISCONNECT_SCRIPT == true
 		end
 	end)()
 	
@@ -849,7 +862,7 @@ local MobileButton = GhostLib.Functions:AddButton({
 	end,
 },ScreenGui, true)
 MobileButton.Position = UDim2.new(0.01, 0,0.946, 0)
-
+MobileButton.Visible = false
 coroutine.wrap(function()
 	while wait(0.5) do
 		if uis.TouchEnabled then
@@ -868,7 +881,12 @@ local file = ""
 
 coroutine.wrap(function()
 	repeat wait() until GhostLib.Started == true
-	file = GhostLib.Name..".txt"
+	if file == "" then
+		file = "GHOST_ADMIN_LIB.txt"
+	else
+		file = GhostLib.Name..".txt"
+	end
+	
 	if file ~= nil and tostring(file) then
 		if (readfile and isfile and isfile(file)) then
 			GhostLib.Settings = HttpService:JSONDecode(readfile(file))
@@ -878,7 +896,45 @@ coroutine.wrap(function()
 
 	loadedidk = true 
 end)()
+local function w(arg)
+	if tonumber(arg) then
+		wait(tonumber(arg))
+	else
+		game:GetService("RunService").Heartbeat:Wait()
+	end
+end
+local loopOnState = {}
+function GhostLib.Functions:LoopOnState(state, value, timeWait, funct)
+	loopOnState[state] = {function()
+		coroutine.wrap(function()
+			while w(timeWait) do
+				if DISCONNECT_SCRIPT == true then break end
+					
+				if GhostLib.States[state] ~= value then
+					break
+				end
+				local s,e = pcall(funct)
+				if e then
+					print(e)
+				end
+			end
+		end)()
+	end, value}
+end
+	
+function GhostLib.Functions:AddLoop(TimeWait, funct)
+	coroutine.wrap(function()
+		while w(TimeWait) do
+			if DISCONNECT_SCRIPT == true then break end
 
+			local s,e = pcall(funct)
+			if e then
+				print(e)
+			end
+		end
+		
+	end)()
+end
 function GhostLib.Functions:AddKeybind(tab, page)
 	coroutine.wrap(function()
 		
@@ -893,7 +949,6 @@ function GhostLib.Functions:AddKeybind(tab, page)
 		repeat wait() until loadedidk == true
 		if GhostLib.Settings[text] then
 			Key = Enum.KeyCode[GhostLib.Settings[text]]
-			print(Key)
 		end
 		Nk.Box.Text = Key.Name
 		Nk.Text2.Text = text
@@ -901,7 +956,9 @@ function GhostLib.Functions:AddKeybind(tab, page)
 		Nk.MouseButton1Down:Connect(function()
 			local conn1
 			GhostLib.Functions:Rgb(Nk)
+			wait(0.25)
 			conn1 = uis.InputBegan:Connect(function(i,p)
+				print(i.KeyCode.Name)
 				if not p then
 					if i.KeyCode ~= Enum.KeyCode.Unknown and al == false then
 						al = true
@@ -911,27 +968,32 @@ function GhostLib.Functions:AddKeybind(tab, page)
 						conn1:Disconnect()
 						local json
 						GhostLib.Settings[text] = Key.Name
-						print(text)
-						for i,v in pairs(GhostLib.Settings) do
-							print(i)
-							print(v)
-						end
 						json = HttpService:JSONEncode(GhostLib.Settings)
-						print("file")
 						writefile(file, json)
-						print("writefile")
 						wait(0.5)
 						al = false
+					else
+						al = true
+						GhostLib.Functions:RemoveRgb(Nk)
+						conn1:Disconnect()
+						al = false
 					end
-					
+				elseif i.KeyCode == Enum.KeyCode.Unknown then
+					al = true
+					GhostLib.Functions:RemoveRgb(Nk)
+					conn1:Disconnect()
+					al = false
 				end
 			end)
 			
 		end)
-		
-		uis.InputBegan:Connect(function(i,p)
+		local conn
+		conn = uis.InputBegan:Connect(function(i,p)
+			if DISCONNECT_SCRIPT == true then
+				conn:Disconnect()
+			end
 			if not p then
-				if i.KeyCode == Key and al == false and GhostLib.Started == true then
+				if i.KeyCode == Key and al == false and GhostLib.Started == true and DISCONNECT_SCRIPT == false then
 					pcall(CallBack)
 				end
 			end
@@ -1261,6 +1323,7 @@ local PlayerLogs = GhostLib.Functions:AddPage({
 	Name = "Player Logs",
 	Image = "http://www.roblox.com/asset/?id=11176073563"
 })
+
 GhostLib.Functions:AddTitle({
 	Text = "Players",
 	Color = Color3.fromRGB(255, 255, 255)
@@ -1301,43 +1364,59 @@ local function mayusfirst(str)
 end
 function GhostLib.States:SetState(state, arg)
 	if not state then return end
-	local stateusing = string.upper(state)
-
-		if arg == "on" then
-			if GhostLib.States[stateusing] == true then
-				GhostLib.Functions:MakeNotification(mayusfirst(stateusing)..": already enabled", colors.Red, "error")
+	local state = string.upper(state)
+	if arg == "on" then
+		if GhostLib.States[state] == true then
+			GhostLib.Functions:MakeNotification(mayusfirst(state)..": already enabled", colors.Red, "error")
+			return false
+		else
+			GhostLib.States[state] = true
+			GhostLib.Functions:MakeNotification(mayusfirst(state)..": enabled", colors.Green)
+			if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
+				local s,e = pcall(loopOnState[state][1])
+				if e then print(e) end
+			end
+			
+			return true
+		end
+	else
+		if arg == "off" then
+			if GhostLib.States[state] == false then
+				GhostLib.Functions:MakeNotification(mayusfirst(state)..": already disabled", colors.Red, "error")
 				return false
 			else
-				GhostLib.States[stateusing] = true
-				GhostLib.Functions:MakeNotification(mayusfirst(stateusing)..": enabled", colors.Green)
+				GhostLib.Functions:MakeNotification(mayusfirst(state)..": disabled", colors.Green)
+				GhostLib.States[state] = false
+				if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
+					local s,e = pcall(loopOnState[state][1])
+					if e then print(e) end
+				end
 				return true
 			end
 		else
-			if arg == "off" then
-				if GhostLib.States[stateusing] == false then
-					GhostLib.Functions:MakeNotification(mayusfirst(stateusing)..": already disabled", colors.Red, "error")
-					return false
-				else
-					GhostLib.Functions:MakeNotification(mayusfirst(stateusing)..": disabled", colors.Green)
-					GhostLib.States[stateusing] = false
+			if not arg then
+				if GhostLib.States[state] == false or GhostLib.States[state] == nil or not GhostLib.States[state] then
+					GhostLib.States[state] = true
+					GhostLib.Functions:MakeNotification(mayusfirst(state)..": enabled", colors.Green)
+					if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
+						local s,e = pcall(loopOnState[state][1])
+						if e then print(e) end
+					end
 					return true
-				end
-			else
-				if not arg then
-					if GhostLib.States[stateusing] == false or GhostLib.States[stateusing] == nil or not GhostLib.States[stateusing] then
-						GhostLib.States[stateusing] = true
-						GhostLib.Functions:MakeNotification(mayusfirst(stateusing)..": enabled", colors.Green)
-						return true
-					else
-						if GhostLib.States[stateusing] == true then
-							GhostLib.Functions:MakeNotification(mayusfirst(stateusing)..": disabled", colors.Green)
-							GhostLib.States[stateusing] = false
-							return true
+				else
+					if GhostLib.States[state] == true then
+						GhostLib.Functions:MakeNotification(mayusfirst(state)..": disabled", colors.Green)
+						GhostLib.States[state] = false
+						if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
+							local s,e = pcall(loopOnState[state][1])
+							if e then print(e) end
 						end
+						return true
 					end
 				end
 			end
 		end
+	end
 end
 
 GhostLib.PlayerM.OnPlayerRejoin:Connect(function(player)
