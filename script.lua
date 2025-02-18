@@ -19,6 +19,7 @@ local GhostLib = {
 	Version = 3,
     PlayerM = loadstring(game:HttpGet("https://raw.githubusercontent.com/el-ghxst/PlayerM/refs/heads/main/script.lua"))();
     Name = "",
+	Disconnected = false,
 	
 }
 getgenv().GHOST_ADMIN_LIBRARY = GhostLib
@@ -33,14 +34,21 @@ colors.Red = Color3.fromRGB(255, 0, 0)
 colors.DarkRed = Color3.fromRGB(170, 0, 0)
 colors.Purple = Color3.fromRGB(255,0,255)
 colors.LightBlue = Color3.fromRGB(51,249,255)
-local DISCONNECT_SCRIPT = false
+
 function GhostLib:Start()
 	GhostLib.Started = true
+	local loadCMDS = getgenv().LoadSettings
+	if loadCMDS then
+		for _,cmd in pairs(loadCMDS) do
+			GhostLib.Functions:Execute_command({str = cmd})
+		end
+	end
+	
 end
 
 local ScreenGui = Instance.new("ScreenGui")
 function GhostLib:Disconnect()
-	DISCONNECT_SCRIPT = true
+	GhostLib.Disconnected = true
 	ScreenGui:Destroy()
 end
 local CommandBar = Instance.new("Frame")
@@ -705,7 +713,7 @@ function GhostLib.Functions:Rgb(frame)
 					counter = counter + 2
 					status = "down"
 				end
-			until gradient.Parent ~= frame or DISCONNECT_SCRIPT == true
+			until gradient.Parent ~= frame or GhostLib.Disconnected == true
 		end
 	end)()
 	
@@ -907,25 +915,29 @@ local loopOnState = {}
 function GhostLib.Functions:LoopOnState(state, value, timeWait, funct)
 	loopOnState[state] = {function()
 		coroutine.wrap(function()
-			while w(timeWait) do
-				if DISCONNECT_SCRIPT == true then break end
-					
+			while wait(timeWait) do
+
+				if GhostLib.Disconnected == true then break end
+
 				if GhostLib.States[state] ~= value then
 					break
 				end
+
 				local s,e = pcall(funct)
 				if e then
 					print(e)
 				end
+
 			end
 		end)()
 	end, value}
+	return loopOnState[state]
 end
 	
 function GhostLib.Functions:AddLoop(TimeWait, funct)
 	coroutine.wrap(function()
-		while w(TimeWait) do
-			if DISCONNECT_SCRIPT == true then break end
+		while wait(TimeWait) do
+			if GhostLib.Disconnected == true then break end
 
 			local s,e = pcall(funct)
 			if e then
@@ -958,7 +970,6 @@ function GhostLib.Functions:AddKeybind(tab, page)
 			GhostLib.Functions:Rgb(Nk)
 			wait(0.25)
 			conn1 = uis.InputBegan:Connect(function(i,p)
-				print(i.KeyCode.Name)
 				if not p then
 					if i.KeyCode ~= Enum.KeyCode.Unknown and al == false then
 						al = true
@@ -989,11 +1000,11 @@ function GhostLib.Functions:AddKeybind(tab, page)
 		end)
 		local conn
 		conn = uis.InputBegan:Connect(function(i,p)
-			if DISCONNECT_SCRIPT == true then
+			if GhostLib.Disconnected == true then
 				conn:Disconnect()
 			end
 			if not p then
-				if i.KeyCode == Key and al == false and GhostLib.Started == true and DISCONNECT_SCRIPT == false then
+				if i.KeyCode == Key and al == false and GhostLib.Started == true and GhostLib.Disconnected == false then
 					pcall(CallBack)
 				end
 			end
@@ -1362,6 +1373,12 @@ local function mayusfirst(str)
 	local string1 = string.lower(str)
 	return removeguion((string1:gsub("^%l", string.upper)))
 end
+local function los(state)
+	if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
+		local s,e = pcall(loopOnState[state][1])
+		if e then print(e) end
+	end
+end
 function GhostLib.States:SetState(state, arg)
 	if not state then return end
 	local state = string.upper(state)
@@ -1372,10 +1389,7 @@ function GhostLib.States:SetState(state, arg)
 		else
 			GhostLib.States[state] = true
 			GhostLib.Functions:MakeNotification(mayusfirst(state)..": enabled", colors.Green)
-			if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
-				local s,e = pcall(loopOnState[state][1])
-				if e then print(e) end
-			end
+			los(state)
 			
 			return true
 		end
@@ -1387,10 +1401,7 @@ function GhostLib.States:SetState(state, arg)
 			else
 				GhostLib.Functions:MakeNotification(mayusfirst(state)..": disabled", colors.Green)
 				GhostLib.States[state] = false
-				if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
-					local s,e = pcall(loopOnState[state][1])
-					if e then print(e) end
-				end
+				los(state)
 				return true
 			end
 		else
@@ -1398,19 +1409,13 @@ function GhostLib.States:SetState(state, arg)
 				if GhostLib.States[state] == false or GhostLib.States[state] == nil or not GhostLib.States[state] then
 					GhostLib.States[state] = true
 					GhostLib.Functions:MakeNotification(mayusfirst(state)..": enabled", colors.Green)
-					if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
-						local s,e = pcall(loopOnState[state][1])
-						if e then print(e) end
-					end
+					los(state)
 					return true
 				else
 					if GhostLib.States[state] == true then
 						GhostLib.Functions:MakeNotification(mayusfirst(state)..": disabled", colors.Green)
 						GhostLib.States[state] = false
-						if loopOnState[state] and loopOnState[state][2] == GhostLib.States[state] then
-							local s,e = pcall(loopOnState[state][1])
-							if e then print(e) end
-						end
+						los(state)
 						return true
 					end
 				end
